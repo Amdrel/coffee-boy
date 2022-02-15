@@ -19,22 +19,6 @@ import * as fs from "fs/promises";
 
 const ROM_MAX_SIZE = 65536;
 
-/**
- * Reads the contents of a Gameboy ROM dump into a GbRom object.
- * @param filepath where the ROM lives in the filesystem
- * @returns a GbRom object
- */
-export async function readGbRom(filepath: string): Promise<GbRom> {
-  const buf = await fs.readFile(filepath, { flag: "r" });
-  if (buf.byteLength > ROM_MAX_SIZE) {
-    throw new Error(`ROM size exceeds ${ROM_MAX_SIZE} length limit.`);
-  }
-
-  const rom = new Uint8Array(ROM_MAX_SIZE);
-  rom.set(buf, 0);
-  return new GbRom(rom);
-}
-
 /*
  * Credit: https://www.chibiakumas.com/z80/Gameboy.php
  *
@@ -144,6 +128,22 @@ export class GbRom {
     this.globalChecksum = view.getUint16(0x14e, true);
 
     this.data = rom;
+  }
+
+  /**
+   * Reads the contents of a Gameboy ROM dump into a GbRom object.
+   * @param filepath where the ROM lives in the filesystem
+   * @returns a GbRom object
+   */
+  static async fromFilesystem(filepath: string): Promise<GbRom> {
+    const buf = await fs.readFile(filepath, { flag: "r" });
+    if (buf.byteLength > ROM_MAX_SIZE) {
+      throw new Error(`ROM size exceeds ${ROM_MAX_SIZE} length limit.`);
+    }
+
+    const rom = new Uint8Array(ROM_MAX_SIZE);
+    rom.set(buf, 0);
+    return new GbRom(rom);
   }
 
   // TODO: Implement header and global checksum validation.
