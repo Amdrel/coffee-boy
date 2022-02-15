@@ -1,0 +1,22 @@
+{
+  "name": "coffee-boy",
+  "version": "0.1.0",
+  "description": "A GBC emulator written in TypeScript.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "typescript",
+    "gameboy",
+    "gameboy-color",
+    "emulator",
+    "z80"
+  ],
+  "author": "Jamie Kuppens",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "ts-node": "^10.5.0",
+    "typescript": "^4.5.5"
+  }
+}
