@@ -130,6 +130,35 @@ export class Memory {
   }
 
   readUint8(addr: number): number {
-    return 0;
+    const [view, offset] = this.map(addr);
+    return view.getUint8(offset);
+  }
+
+  writeUint8(addr: number, value: number): void {
+    const [view, offset, mode] = this.map(addr);
+    if (mode === WriteMode.Writable) {
+      view.setUint8(offset, value);
+    }
+  }
+
+  readUint16(addr: number): number {
+    const [view1, offset1] = this.map(addr);
+    const [view2, offset2] = this.map(addr + 1);
+
+    const low = view1.getUint8(offset1);
+    const high = view2.getUint8(offset2);
+
+    return (high << 8) | low;
+  }
+
+  writeUint16(addr: number, value: number): void {
+    const [view1, offset1, mode1] = this.map(addr);
+    const [view2, offset2, mode2] = this.map(addr + 1);
+
+    const low = value & 0xff;
+    const high = value & 0xff00;
+
+    if (mode1 === WriteMode.Writable) view1.setUint8(offset1, low);
+    if (mode2 === WriteMode.Writable) view2.setUint8(offset2, high);
   }
 }
