@@ -15,10 +15,12 @@
  * this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Memory } from "./memory";
 import { GbRom } from "./rom";
 
 async function main() {
   const rom = await GbRom.fromFilesystem(process.argv[2]);
+  const memory = new Memory(rom);
   console.log(rom);
 }
 

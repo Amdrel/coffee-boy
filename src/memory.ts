@@ -69,22 +69,22 @@ export class Memory {
   workRam0: DataView = this.memBank0;
   workRam1: DataView = this.memBank1;
 
-  tiles0 = new DataView(new Uint8Array(0x9000 - 0x8000));
-  tiles1 = new DataView(new Uint8Array(0x9800 - 0x9000));
+  tiles0 = new DataView(new Uint8Array(0x9000 - 0x8000).buffer);
+  tiles1 = new DataView(new Uint8Array(0x9800 - 0x9000).buffer);
 
-  tileMap0 = new DataView(new Uint8Array(0x9c00 - 0x9800));
-  tileMap1 = new DataView(new Uint8Array(0xa000 - 0x9c00));
+  tileMap0 = new DataView(new Uint8Array(0x9c00 - 0x9800).buffer);
+  tileMap1 = new DataView(new Uint8Array(0xa000 - 0x9c00).buffer);
 
   // TODO: I believe this is swappable. Refine later.
   externalRam = new DataView(new Uint8Array(EXTERNAL_RAM_BANK_SIZE).buffer);
 
-  spriteAttributeTable = new DataView(new Uint8Array(0xfea0 - 0xfe00));
+  spriteAttributeTable = new DataView(new Uint8Array(0xfea0 - 0xfe00).buffer);
 
   constructor(rom: GbRom) {
     this.romBank0 = new DataView(rom.data.buffer, 0x0, 0x4000);
-    this.romBank1 = new DataView(rom.data.buffer, 0x4000, 0x8000);
-    this.romBank2 = new DataView(rom.data.buffer, 0x8000, 0xc000);
-    this.romBank3 = new DataView(rom.data.buffer, 0xc000, 0x10000);
+    this.romBank1 = new DataView(rom.data.buffer, 0x4000, 0x8000 - 0x4000);
+    this.romBank2 = new DataView(rom.data.buffer, 0x8000, 0xc000 - 0x8000);
+    this.romBank3 = new DataView(rom.data.buffer, 0xc000, 0x10000 - 0xc000);
 
     this.workRom0 = this.romBank0;
     this.workRom1 = this.romBank1;
@@ -141,24 +141,40 @@ export class Memory {
     }
   }
 
-  readUint16(addr: number): number {
+  readUint16LE(addr: number): number {
     const [view1, offset1] = this.map(addr);
     const [view2, offset2] = this.map(addr + 1);
 
-    const low = view1.getUint8(offset1);
-    const high = view2.getUint8(offset2);
+    if (view1 === view2) {
+      return view1.getUint16(offset1, true);
+    } else {
+      // Slower failsafe if writing across I/O boundaries.
+      const low = view1.getUint8(offset1);
+      const high = view2.getUint8(offset2);
 
-    return (high << 8) | low;
+      return (high << 8) | low;
+    }
   }
 
-  writeUint16(addr: number, value: number): void {
+  writeUint16LE(addr: number, value: number): void {
     const [view1, offset1, mode1] = this.map(addr);
     const [view2, offset2, mode2] = this.map(addr + 1);
 
-    const low = value & 0xff;
-    const high = value & 0xff00;
+    if (view1 === view2) {
+      if (mode1 === WriteMode.Writable) {
+        view1.setUint16(offset1, value, true);
+      }
+    } else {
+      // Slower failsafe if writing across I/O boundaries.
+      const low = value & 0xff;
+      const high = (value & 0xff00) >> 8;
 
-    if (mode1 === WriteMode.Writable) view1.setUint8(offset1, low);
-    if (mode2 === WriteMode.Writable) view2.setUint8(offset2, high);
+      if (mode1 === WriteMode.Writable) {
+        view1.setUint8(offset1, low);
+      }
+      if (mode2 === WriteMode.Writable) {
+        view2.setUint8(offset2, high);
+      }
+    }
   }
 }
