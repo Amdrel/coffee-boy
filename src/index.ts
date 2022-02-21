@@ -15,12 +15,14 @@
  * this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { SharpLR35902 } from "./cpu";
 import { Memory } from "./memory";
 import { GbRom } from "./rom";
 
 async function main() {
   const rom = await GbRom.fromFilesystem(process.argv[2]);
   const memory = new Memory(rom);
+  const cpu = new SharpLR35902(memory);
   console.log(rom);
 }
 

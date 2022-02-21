@@ -116,9 +116,10 @@ export class GbRom {
     this.romSize = (view.getUint8(0x148) + 1) * 32768;
 
     const cartRamSize = view.getUint8(0x149);
-    if (cartRamSize === 1) this.cartRamSize = 2048;
-    else if (cartRamSize === 2) this.cartRamSize = 8192;
+    if (cartRamSize === 2) this.cartRamSize = 8192;
     else if (cartRamSize === 3) this.cartRamSize = 32768;
+    else if (cartRamSize === 4) this.cartRamSize = 131072;
+    else if (cartRamSize === 5) this.cartRamSize = 65536;
     else this.cartRamSize = 0;
 
     this.destinationCode = view.getUint8(0x14a);

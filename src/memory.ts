@@ -17,6 +17,37 @@
 
 import { GbRom } from "./rom";
 
+/*
+ * I/O constants for internal and external hardware.
+ *
+ * Credit: https://gbdev.io/pandocs/Memory_Map.html#io-ranges
+ *
+ * $FF00		    DMG	Controller
+ * $FF01	$FF02	DMG	Communication
+ * $FF04	$FF07	DMG	Divider and Timer
+ * $FF10	$FF26	DMG	Sound
+ * $FF30	$FF3F	DMG	Waveform RAM
+ * $FF40	$FF4B	DMG	LCD
+ * $FF4F		    CGB	VRAM Bank Select
+ * $FF50		    DMG	Set to non-zero to disable boot ROM
+ * $FF51	$FF55	CGB	VRAM DMA
+ * $FF68	$FF69	CGB	BG / OBJ Palettes
+ * $FF70		CGB	WRAM Bank Select
+ */
+
+const CONTROLLER = 0xff00;
+const COMMUNICATION = 0xff01;
+const DIVIDER_AND_TIMER = 0xff04;
+const SOUND = 0xff10;
+const WAVEFORM_RAM = 0xff30;
+const LCD = 0xff40;
+const VRAM_BANK_SELECT = 0xff4f;
+const DISABLE_BOOT_ROM = 0xff50;
+const VRAM_DMA = 0xff51;
+const BG_OBJ_PALETTES = 0xff68;
+const WRAM_BANK_SELECT = 0xff70;
+
+// RAM bank alloc sizes.
 const WORK_RAM_BANK_SIZE = 4096;
 const EXTERNAL_RAM_BANK_SIZE = 8192;
 
@@ -115,6 +146,8 @@ export class Memory {
       // TODO: Toggle write mode based on screen redraw state.
       return [this.spriteAttributeTable, addr - 0xfe00, WriteMode.Writable];
     } else if (addr >= 0xfea0 && addr <= 0xfeff) {
+      // TODO: Implement as defined in the following document for maximum
+      // compatibility: https://gbdev.io/pandocs/Memory_Map.html#fea0-feff-range
       throw new Error(`Unhandled (not usable) address ${addr}.`);
     } else if (addr >= 0xff00 && addr <= 0xff7f) {
       throw new Error(`Unhandled (I/O) address ${addr}.`);
